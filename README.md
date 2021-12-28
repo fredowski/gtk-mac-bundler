@@ -20,7 +20,8 @@ module is built in to the Pango library, by using the configure flag:
 
 Run `make install`; this installs the script into `~/bin` folder. Make sure you
 have that directory in your `PATH`, or use the absolute path when starting
-the script.
+the script. You can install the script also to a different
+location via `make bindir=LOCATION install`.
 
 
 ## Prerequisites
@@ -333,6 +334,13 @@ To run the application under gdb, do:
 
     GTK_DEBUG_GDB=yes MyApp.app/Contents/MacOS/MyApp
 
+## Building a bundle from a Homebrew environment
+
+If you want to create a bundle from an application that is installed
+in a Homebrew environment, then this requires that the application is
+build as a relocatable application. You probably need at least to pass
+a configure parameter like "--enable-relocate" via the formula. Then
+you can create the bundle.
 
 ## License
 

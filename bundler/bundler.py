@@ -73,7 +73,7 @@ class Bundler(object):
         path.copy_target(self.project)
     def run_module_catalog(self, env_var, env_val, exe_name):
         exepath = self.project.evaluate_path('${prefix}/bin/%s' % exe_name)
-        temppath = self.project.get_bundle_path('Contents/MacOS/', exe_name)
+        temppath = self.project.get_bundle_path('Contents/Resources/bin/', exe_name)
         path = Binary(exepath, temppath)
         path.copy_target(self.project)
 
@@ -330,6 +330,11 @@ class Bundler(object):
         def prefix_filter(line):
             if not "(compatibility" in line:
                 #print "Removed %s" % line
+                return False
+
+            # Skip all libraries in "Cellar" in a homebrew environment
+            if "Cellar" in line:
+                print("Found a Cellar library - removing", line.strip().split()[0] )
                 return False
 
             if line.startswith("/usr/X11"):

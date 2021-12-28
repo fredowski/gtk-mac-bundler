@@ -7,7 +7,7 @@ fi
 
 LIBRARY=$1
 WRONG_PREFIX=$2
-RIGHT_PREFIX="@executable_path/../$3"
+RIGHT_PREFIX="@executable_path/../../$3"
 ACTION=$4
 
 chmod u+w $LIBRARY
@@ -17,6 +17,17 @@ if [ "x$ACTION" == "xchange" ]; then
     for lib in $libs; do
 	if ! echo $lib | grep --silent "@executable_path" ; then
 	    fixed=`echo $lib | sed -e s,\$WRONG_PREFIX,\$RIGHT_PREFIX,`
+	    # Check if we run in a homebrew environment and replace all "Cellar" library
+	    # locations with the location in opt/lib. Library locations with "Cellar" are used as indication
+	    # that we run in homebrew.
+	    # Example: /usr/local/homebrew/Cellar/pango/1.50.3/lib/libpango-1.0.0.dylib translates via
+	    # libname = "pango" and libfullname = "lib/libpango-1.0.0.dylib" to
+	    # @executable_path/../Resources/opt/pango/lib/libpango-1.0.0.dylib
+	    if echo $lib | grep --silent "Cellar" ; then
+		libname=`echo $lib | sed -n 's/.*Cellar\/\([^\/]*\)\/.*/\1/p'`
+		libfullname=`echo $lib | sed -n 's/.*\/\(lib\/.*\)/\1/p'`
+		fixed="$RIGHT_PREFIX/opt/$libname/$libfullname"
+	    fi
 	    install_name_tool -change $lib $fixed $LIBRARY
 	fi
     done;
