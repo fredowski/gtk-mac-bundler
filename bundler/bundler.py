@@ -248,7 +248,7 @@ class Bundler(object):
             # Replace the hardcoded bundle path with @executable_path...
             if line.startswith(prefix):
                 line = line[len(prefix):]
-                line = "\"@executable_path/../Resources" + line
+                line = "\"@executable_path/../../Resources" + line
             fout.write(line)
             fout.write("\n")
         fout.close()
