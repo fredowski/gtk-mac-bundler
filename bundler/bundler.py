@@ -327,14 +327,20 @@ class Bundler(object):
                 print("Cannot find a matching prefix for %s" % (line))
             return line
 
+        def homebrew_cellar_fix(pathn):
+            # For homebrew do not link to Cellar but to the public version
+            # Cellarpath: /usr/local/Cellar/pango/1.52.1/lib/libpango-1.0.0.dylib
+            # fix to : /usr/local/opt/pango/lib/libpango-1.0.0.dylib
+            if "Cellar" in pathn:
+                res = re.sub("/Cellar/","/opt/",pathn)
+                res = re.sub("/[0-9._]*/lib","/lib",res)
+                print("Found: ", pathn, " fixed to:", res)
+                return res
+            return pathn
+
         def prefix_filter(line):
             if not "(compatibility" in line:
                 #print "Removed %s" % line
-                return False
-
-            # Skip all libraries in "Cellar" in a homebrew environment
-            if "Cellar" in line:
-                print("Found a Cellar library - removing", line.strip().split()[0] )
                 return False
 
             if line.startswith("/usr/X11"):
@@ -400,7 +406,8 @@ class Bundler(object):
                 # create a Path object.
                 for (key, value) in list(prefixes.items()):
                     if library.startswith(value):
-                        path = Binary("${prefix:" + key + "}" + library[len(value):])
+                        fixedlib = homebrew_cellar_fix(library)
+                        path = Binary("${prefix:" + key + "}" + fixedlib[len(value):])
                         new_libraries.append(path)
 
             n_paths = len(paths)
